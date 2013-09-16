@@ -1,0 +1,23 @@
+#sidebar {
+	height: 700px;
+	margin-top: 10px;
+}
+#basicMap {
+    width: 100%;
+    height: 700px;
+    margin-top: 10px !important;
+}
+.select {
+	width: 100%;
+}
+#timepicker, #timepicker input {
+	width: 90%;
+	cursor: pointer;
+}
+#timepicker input {
+	background-color: #ffffff;
+}
+.table-condensed span h6{
+	margin-left: 10px;
+	font-size: 16px;
+}
