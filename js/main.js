@@ -1,3 +1,5 @@
+var map, fromProjection, toProjection, selectControl, selectedFeature, layer, data;
+var days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 function init() {
   map = new OpenLayers.Map({
             div: "basicMap",
@@ -13,15 +15,132 @@ function init() {
         });
 
   var mapnik         = new OpenLayers.Layer.OSM();
-  var fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
-  var toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
+  fromProjection = new OpenLayers.Projection("EPSG:4326");   // Transform from WGS 1984
+  toProjection   = new OpenLayers.Projection("EPSG:900913"); // to Spherical Mercator Projection
   var position       = new OpenLayers.LonLat(-76.942658080223, 38.986575384046).transform( fromProjection, toProjection);
   var zoom           = 16;
 
   map.addLayer(mapnik);
   map.setCenter(position, zoom );
- 
- setupTimePicker();
+  
+  //var timeArr = [days[moment().day()], moment().hours(), moment().minutes()];
+  var timeArr = ['mon', 8, 00];
+  getData(timeArr);
+  setupTimePicker();
+}
+
+function formSubmit(form) {
+  console.log(form.day);
+  console.log(form.time);
+  console.log(layer);
+  layer.removeAllFeatures();
+  //layer.destroyFeatures();
+  layer.refresh();
+  addMarkers();
+}
+
+function getData(timeArr) {
+  var url = "scripts/getClasses.php";
+  var params = "day="+timeArr[0]+"&hour="+timeArr[1]+"&min="+timeArr[2];
+  var xmlhttp = new XMLHttpRequest();
+
+  xmlhttp.open("GET", url+"?"+params, true);
+  xmlhttp.onreadystatechange = function()
+  {
+      if(xmlhttp.readyState==4 && xmlhttp.status == 200) {
+          data = JSON.parse(xmlhttp.response);
+          addMarkers();
+      }
+  }
+  xmlhttp.send(null);
+}
+
+
+function addMarkers() {
+  var style = new OpenLayers.Style({
+    'externalGraphic': "img/pencil.png?"+Math.random(),
+    'graphicHeight': 35,
+    'graphicWidth': 25,
+    'graphicXOffset': -10,
+    'graphicYOffset': -30,
+    'graphicOpacity': 1,
+    'cursor': 'pointer'
+  });
+
+  var styleMap = new OpenLayers.StyleMap({'default': style, 'default':style});
+
+
+  var wms = new OpenLayers.Layer.WMS( "OpenLayers WMS",
+                "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
+  map.addLayer(wms);
+
+
+
+  var count = Object.keys(data).length;
+  console.log(count);
+
+  var features = new Array(2);
+  features[0] = new OpenLayers.Feature.Vector(
+                    new OpenLayers.Geometry.Point(-76.936205881916, 38.98996636708).transform( fromProjection, toProjection)
+                );
+  features[0].attributes.title = "Classes in CSI";
+  features[0].attributes.description = "Classes:";
+  features[1] = new OpenLayers.Feature.Vector(
+                    new OpenLayers.Geometry.Point(-76.942589539371, 38.988740515545).transform( fromProjection, toProjection)
+                );
+  features[1].attributes.title = "Classes in Biology-Psychology";
+  features[1].attributes.description = "Classes:";
+
+
+
+
+
+
+
+
+  layer = new OpenLayers.Layer.Vector('Points', {
+                styleMap: styleMap
+            });
+            
+  layer.addFeatures(features);
+
+  layer.events.on({
+      'featureselected': onFeatureSelect,
+      'featureunselected': onFeatureUnselect
+  });
+  selectControl = new OpenLayers.Control.SelectFeature(layer);
+  
+  map.addControl(selectControl);
+  selectControl.activate();
+  map.addLayer(layer);
+}
+
+function onPopupClose(evt) {
+    // 'this' is the popup.
+    selectControl.unselect(this.feature);
+}
+function onFeatureSelect(evt) {
+    feature = evt.feature;
+    popup = new OpenLayers.Popup.Anchored("featurePopup",
+                             new OpenLayers.LonLat((feature.geometry.getBounds().getCenterLonLat().lon+0.0), (feature.geometry.getBounds().getCenterLonLat().lat-15.0)),
+                             new OpenLayers.Size(200,200),
+                             "<h5>"+feature.attributes.title + "</h5>" +
+                             feature.attributes.description,
+                             null, true, onPopupClose);
+    popup.autoSize = true;
+    
+    feature.popup = popup;
+    popup.feature = feature;
+    map.addPopup(popup);
+}
+function onFeatureUnselect(evt) {
+    feature = evt.feature;
+    if (feature.popup) {
+        popup.feature = null;
+        map.removePopup(feature.popup);
+        feature.popup.destroy();
+        feature.popup = null;
+    }
 }
 
 function setupTimePicker(){

@@ -11,11 +11,14 @@
 	width: 100%;
 }
 #timepicker, #timepicker input {
-	width: 90%;
+	width: 84%;
 	cursor: pointer;
 }
 #timepicker input {
 	background-color: #ffffff;
+}
+#timeform .submit {
+	margin: 10px 0 0 10px;
 }
 .table-condensed span h6{
 	margin-left: 10px;

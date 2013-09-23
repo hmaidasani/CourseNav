@@ -1,0 +1,22 @@
+
+Building and course data are in their respective SQL files in 
+this directory. In anticipation of using your program/system
+to populate a layer in TerpNav later, the relevant table is
+
+mysql> show columns from layer_points;
++------------+------------------+------+-----+---------------------+-----------------------------+
+| Field      | Type             | Null | Key | Default             | Extra                       |
++------------+------------------+------+-----+---------------------+-----------------------------+
+| pointId    | int(10) unsigned | NO   | PRI | NULL                | auto_increment              |
+| layerId    | int(10) unsigned | NO   | MUL | NULL                |                             |
+| name       | varchar(500)     | NO   |     | NULL                |                             |
+| locationId | int(11)          | NO   |     | NULL                |                             |
+| x          | double           | NO   |     | NULL                |                             |
+| y          | double           | NO   |     | NULL                |                             |
+| start      | timestamp        | NO   |     | CURRENT_TIMESTAMP   | on update CURRENT_TIMESTAMP |
+| end        | timestamp        | NO   |     | 0000-00-00 00:00:00 |                             |
+| imageURL   | varchar(500)     | NO   |     | NULL                |                             |
+| iconId     | int(10) unsigned | NO   |     | NULL                |                             |
++------------+------------------+------+-----+---------------------+-----------------------------+
+
+The chief columns in that table of concern to you would be name, x and y. 
