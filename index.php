@@ -18,11 +18,13 @@
                 <form id="timeform" action="javascript:void(0);" onsubmit="return formSubmit(this);">
                   <h5>Day:</h5>
                   <select class="select" name="day">
-                    <option value="Mon" selected>Monday</option>
-                    <option value="Tue">Tuesday</option>
-                    <option value="Wed">Wednesday</option>
-                    <option value="Thu">Thursday</option>
-                    <option value="Fri">Friday</option>
+                    <option value="mon" selected>Monday</option>
+                    <option value="tue">Tuesday</option>
+                    <option value="wed">Wednesday</option>
+                    <option value="thu">Thursday</option>
+                    <option value="fri">Friday</option>
+		    <option value="sat">Saturday</option>
+		    <option value="sun">Sunday</option>
                   </select>
                   
                   <h5>Time:</h5>
@@ -47,7 +49,7 @@
 
       <hr>
       <footer>
-        <p>© Company 2013</p>
+        <p>&copy;2013</p>
       </footer>
     </div>
     <script src="http://www.openlayers.org/api/OpenLayers.js"></script>

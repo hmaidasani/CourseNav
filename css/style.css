@@ -24,3 +24,13 @@
 	margin-left: 10px;
 	font-size: 16px;
 }
+.bldg-details {
+	font-size: 10px;
+}
+.bldg-details .primary{
+        font-weight: bold;
+}
+.bldg-details .secondary{
+        margin-left: 20px;
+}
+

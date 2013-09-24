@@ -1,4 +1,4 @@
-var map, fromProjection, toProjection, selectControl, selectedFeature, layer, data;
+var map, fromProjection, toProjection, selectControl, selectedFeature, layer, data, features;
 var days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 function init() {
   map = new OpenLayers.Map({
@@ -23,25 +23,32 @@ function init() {
   map.addLayer(mapnik);
   map.setCenter(position, zoom );
   
-  //var timeArr = [days[moment().day()], moment().hours(), moment().minutes()];
-  var timeArr = ['mon', 8, 00];
+  var timeArr = [days[moment().day()], moment().hours(), moment().minutes()];
+  // var timeArr = ['mon', 8, 00];
   getData(timeArr);
   setupTimePicker();
 }
 
 function formSubmit(form) {
-  console.log(form.day);
-  console.log(form.time);
-  console.log(layer);
+  for(var i = 0; i<features.length; i++) {
+    var feature = features[i];
+    if (feature.popup) {
+        popup.feature = null;
+        map.removePopup(feature.popup);
+        feature.popup.destroy();
+        feature.popup = null;
+    }
+  }
   layer.removeAllFeatures();
   //layer.destroyFeatures();
   layer.refresh();
-  addMarkers();
+  var timeArr = [form.day.value, form.time.value.split(":")[0], form.time.value.split(":")[1]];
+  getData(timeArr);
 }
 
 function getData(timeArr) {
-  var url = "scripts/getClasses.php";
-  var params = "day="+timeArr[0]+"&hour="+timeArr[1]+"&min="+timeArr[2];
+  var url = "scripts/getData.php";
+  var params = "day="+timeArr[0]+"&hour="+parseInt(timeArr[1])+"&min="+parseInt(timeArr[2]);
   var xmlhttp = new XMLHttpRequest();
 
   xmlhttp.open("GET", url+"?"+params, true);
@@ -74,29 +81,20 @@ function addMarkers() {
                 "http://vmap0.tiles.osgeo.org/wms/vmap0", {layers: 'basic'} );
   map.addLayer(wms);
 
-
-
   var count = Object.keys(data).length;
   console.log(count);
-
-  var features = new Array(2);
-  features[0] = new OpenLayers.Feature.Vector(
-                    new OpenLayers.Geometry.Point(-76.936205881916, 38.98996636708).transform( fromProjection, toProjection)
-                );
-  features[0].attributes.title = "Classes in CSI";
-  features[0].attributes.description = "Classes:";
-  features[1] = new OpenLayers.Feature.Vector(
-                    new OpenLayers.Geometry.Point(-76.942589539371, 38.988740515545).transform( fromProjection, toProjection)
-                );
-  features[1].attributes.title = "Classes in Biology-Psychology";
-  features[1].attributes.description = "Classes:";
-
-
-
-
-
-
-
+  features = new Array(count);
+  var i =0;
+  var splitArr;
+  for(var key in data)
+  {
+    splitArr = key.split(',');
+    features[i] = new OpenLayers.Feature.Vector(
+                      new OpenLayers.Geometry.Point(splitArr[3], splitArr[2]).transform( fromProjection, toProjection)
+                  );
+    features[i].attributes.title = "Classes in " + splitArr[1];
+    features[i++].attributes.description = popupRoomHtmlContent(data[key]);
+  }
 
   layer = new OpenLayers.Layer.Vector('Points', {
                 styleMap: styleMap
@@ -115,6 +113,22 @@ function addMarkers() {
   map.addLayer(layer);
 }
 
+function popupRoomHtmlContent(roomsArr) {
+  var content = "<div class='bldg-details'>\n";
+
+  for(var i = 0; i < roomsArr.length; i++) {
+    content += "<div class='primary'>\n";
+    content += "Room " + roomsArr[i][0] + " | " + roomsArr[i][1] + " | " + roomsArr[i][2] + " | " + roomsArr[i][4] + "\n";
+    content += "</div>\n";
+    content += "<div class='secondary'>\n";
+    content += roomsArr[i][6] + " | Section(s): " + roomsArr[i][5] + " | " + moment(roomsArr[i][7], "hh:mm").format("h:mma") + " - " + moment(roomsArr[i][8], "hh:mm").format("h:mma") + "\n";
+    content += "</div>\n";
+  }
+
+  content += "</div>";
+  return content;
+}
+
 function onPopupClose(evt) {
     // 'this' is the popup.
     selectControl.unselect(this.feature);
@@ -123,7 +137,7 @@ function onFeatureSelect(evt) {
     feature = evt.feature;
     popup = new OpenLayers.Popup.Anchored("featurePopup",
                              new OpenLayers.LonLat((feature.geometry.getBounds().getCenterLonLat().lon+0.0), (feature.geometry.getBounds().getCenterLonLat().lat-15.0)),
-                             new OpenLayers.Size(200,200),
+                             new OpenLayers.Size(500,200),
                              "<h5>"+feature.attributes.title + "</h5>" +
                              feature.attributes.description,
                              null, true, onPopupClose);
@@ -152,11 +166,12 @@ function setupTimePicker(){
   });
   $('#timepicker, #timepicker input, #timepicker span').click(function(event){
     $('#timepicker').popover({ 
-      placement: 'bottom',
-      html : true, 
-      content: popoverContent()
-
+      trigger: 'manual',
+      placement: 'right',
+      html : true
     });
+    $('#timepicker').data('popover').options.content = popoverContent();
+    $('#timepicker').popover('show');
   });
 
   $(':not(#anything)').on('click', function (e) {
