@@ -157,8 +157,10 @@ function onFeatureUnselect(evt) {
     }
 }
 
+var daysLong = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 function setupTimePicker(){
-
+  var day = daysLong[moment().day()]
+  $('.select option:contains("' + day  + '")').prop('selected', true);
   $('#timepicker input').val(addZero(moment().hours()) +':'+ addZero(moment().minutes()));
   $('#timepicker input').keydown(function(e) {
    e.preventDefault();
