@@ -7,9 +7,14 @@
 	$days = array("mon", "tue", "wed", "thu", "fri", "sat", "sun");
 
 	#iterate through days
-	for ($index = 6; $index <= 6; $index++) {
+	for ($index = 0; $index <= 6; $index++) {
 	$day = $days[$index];
-	echo $day;
+	echo "Populating entries for ${day}\n";
+
+
+	#truncate table
+	$truncate_ok = mysqli_query($con, "truncate table ClassesByTime_${day}");
+	if(!$truncate_ok){ echo "\ntruncate error: ".mysqli_error($con)."\n";exit;}
 
 	$hour = 0;
 	$min = 0;
@@ -22,7 +27,7 @@
 
 	#echo "$time\n";
 	
-	$classes_now_query = "select crs.building, bld.name as bldName,  bld.lat, bld.lng, crs.courseCode, crs.sectionNumber, crs.name, crs.description, crs.type, crs.instructor, crs.room, crs." . $day . "StartTime, crs." . $day .  "EndTime from coursesOld as crs, buildingsOld as bld where " . $day  . "StartTime <='". $time ."' and " . $day  ."EndTime >= '" . $time ."' and crs.building = bld.abbreviation order by crs.building, crs.room, crs.sectionNumber";
+	$classes_now_query = "select crs.building, bld.name as bldName,  bld.lat, bld.lng, crs.courseCode, crs.sectionNumber, crs.name, crs.description, crs.type, crs.instructor, crs.room, crs." . $day . "StartTime, crs." . $day .  "EndTime from coursesOld as crs, buildingsOld as bld where " . $day  . "StartTime <='". $time ."' and " . $day  ."EndTime > '" . $time ."' and crs.building = bld.abbreviation order by crs.building, crs.room, crs.sectionNumber";
 	
 	$classes_now = mysqli_query($con, $classes_now_query);
 	
@@ -59,7 +64,7 @@
 	}
 	//else grab, append,and update to sectionList string from existing entry
 	else {
-	$sectionList = $existing['sectionList'].",".$section;
+	$sectionList = $existing['sectionList'].", ".$section;
 	$update_str = "update ClassesByTime_".$day." set sectionList = '".$sectionList."' where 5minRangeStart = '$time' and bldgAbbr = '$bldgAbbr' and roomNum = '$roomNum' and courseCode = '$courseCode'";
 	$update_query = mysqli_query($con, $update_str);
 	if(!$update_query){ echo "\nupdate error: $update_str\n\n".mysqli_error($con)."\n"; exit;}
