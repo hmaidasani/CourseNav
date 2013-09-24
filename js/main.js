@@ -165,13 +165,20 @@ function setupTimePicker(){
    return false;
   });
   $('#timepicker, #timepicker input, #timepicker span').click(function(event){
+    var content = popoverContent();
     $('#timepicker').popover({ 
       trigger: 'manual',
       placement: 'right',
-      html : true
+      html : true,
+      content : content
     });
-    $('#timepicker').data('popover').options.content = popoverContent();
+    $('#timepicker').data('popover').options.html = true;
+    $('#timepicker').data('popover').options.content = content;
+    // $('.popover-content').html(popoverContent());
     $('#timepicker').popover('show');
+    
+    event.preventDefault();
+    return false;
   });
 
   $(':not(#anything)').on('click', function (e) {

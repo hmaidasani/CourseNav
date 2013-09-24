@@ -1,0 +1,11 @@
+<?php
+
+$con=mysqli_connect("", "root", "password", "CourseLayer");
+// Check if connection succesful
+if(mysqli_connect_errno($con)){	echo "\n".mysqli_connect_error()."\n"; }
+
+$days = array("mon", "tue", "wed", "thu", "fri", "sat", "sun");
+
+foreach($days as $day) {
+
+echo my
